@@ -1,0 +1,8 @@
+{
+  "_comment": "メール通知設定。Gmailの場合はアプリパスワードを使用してください。",
+  "_gmail_help": "https://support.google.com/accounts/answer/185833",
+  "smtp_host": "smtp.gmail.com",
+  "smtp_port": 587,
+  "smtp_user": "your-email@gmail.com",
+  "smtp_pass": "your-app-password-here"
+}
