@@ -253,7 +253,7 @@ table.stocks tr:hover td{background:var(--bg3);cursor:pointer;}
 
       <div class="scan-wrap">
         <button class="scan-btn" id="scan-btn" onclick="runScan()">
-          <span id="scan-icon">🔍</span><span id="scan-lbl">銘柄スキャン開始</span>
+          <span id="scan-icon">📂</span><span id="scan-lbl">保存済みデータを表示</span>
         </button>
       </div>
 
@@ -265,7 +265,7 @@ table.stocks tr:hover td{background:var(--bg3);cursor:pointer;}
       <div class="card">
         <div class="card-title">⭐ 注目の上位銘柄（スコア順 Top5）</div>
         <div id="top-picks">
-          <div class="empty"><div style="font-size:36px;margin-bottom:12px;">📡</div><h3>スキャン待ち</h3><p>「銘柄スキャン開始」を押してください</p></div>
+          <div class="empty"><div style="font-size:36px;margin-bottom:12px;">📡</div><h3>データ読み込み待ち</h3><p>「保存済みデータを表示」を押してください<br><small style="color:var(--text3)">※ 分析は毎日15:35に自動実行されます</small></p></div>
         </div>
       </div>
     </div>
@@ -395,12 +395,16 @@ async function checkServer() {
 
 // ページ読み込み時に即実行 → 失敗なら3秒ごとにリトライ
 checkServer().then(ok => {
-  if (!ok) {
+  if (ok) {
+    // サーバー接続OKなら自動でDBデータを読み込む
+    setTimeout(() => runScan(), 300);
+  } else {
     const timer = setInterval(async () => {
       const ok2 = await checkServer();
       if (ok2) {
         clearInterval(timer);
         document.getElementById('mkt-label').textContent = 'サーバー接続済み';
+        setTimeout(() => runScan(), 300);
       }
     }, 3000);
   }
@@ -441,7 +445,7 @@ async function runScan() {
 
   btn.disabled = true;
   icon.textContent = '⏳';
-  lbl.textContent  = 'データ取得中...';
+  lbl.textContent  = '読み込み中...';
   prog.style.display = '';
 
   // Fake progress animation while waiting
@@ -449,7 +453,7 @@ async function runScan() {
   const timer = setInterval(() => {
     pct = Math.min(pct + Math.random() * 4, 90);
     bar.style.width = pct + '%';
-    pLbl.textContent = `yfinance でデータ取得中... ${Math.floor(pct)}%`;
+    pLbl.textContent = `DBからデータ読み込み中... ${Math.floor(pct)}%`;
   }, 300);
 
   try {
@@ -481,15 +485,15 @@ async function runScan() {
     renderRecommend();
 
     icon.textContent = '✅';
-    lbl.textContent  = '再スキャン';
-    setTimeout(() => { icon.textContent='🔍'; lbl.textContent='銘柄スキャン開始'; }, 3000);
+    lbl.textContent  = '再読み込み';
+    setTimeout(() => { icon.textContent='📂'; lbl.textContent='保存済みデータを表示'; }, 3000);
 
   } catch(e) {
     clearInterval(timer);
     prog.style.display = 'none';
     icon.textContent = '❌';
     lbl.textContent  = 'エラー（サーバー確認）';
-    setTimeout(() => { icon.textContent='🔍'; lbl.textContent='銘柄スキャン開始'; btn.disabled=false; }, 3000);
+    setTimeout(() => { icon.textContent='📂'; lbl.textContent='保存済みデータを表示'; btn.disabled=false; }, 3000);
     showToast('⚠ サーバーに接続できません。python app.py を起動してください。');
     return;
   }
