@@ -1,0 +1,18 @@
+# render.yaml
+# Render へのデプロイ設定
+
+services:
+  - type: web
+    name: kabuka-analysis
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -c gunicorn_config.py app:app
+    envVars:
+      - key: DB_DIR
+        value: /var/data          # Persistent Disk のマウントポイント
+      - key: ADMIN_SECRET
+        generateValue: true       # 手動スキャン用の認証シークレット（自動生成）
+    disk:
+      name: kabuka-db
+      mountPath: /var/data        # SQLite ファイルを永続保存するディスク
+      sizeGB: 1                   # 月 $0.25（最小サイズ）
